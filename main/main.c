@@ -4,7 +4,7 @@
 //#include "protocol_examples_common.h"
 
 httpd_handle_t serverHandle = NULL;
-
+esp_netif_t* wifiAP;
 
 static const char *TAG = "ESP32-S3 DevKit";
 
@@ -49,6 +49,7 @@ esp_err_t getNewOTAImage(httpd_req_t *req){
     esp_ota_handle_t ota_handle;
     const esp_partition_t *update_partition = esp_ota_get_next_update_partition(NULL);
 
+    esp_ota_begin(update_partition, OTA_SIZE_UNKNOWN, &ota_handle);
 
     char buf[1024];
     int received;
@@ -75,63 +76,51 @@ esp_err_t getNewOTAImage(httpd_req_t *req){
     return ESP_OK;
 }
 
+esp_err_t healthCheckFunction(httpd_req_t *req){
+    httpd_resp_send(req, "GOOD", HTTPD_RESP_USE_STRLEN);
+    return ESP_OK;
+}
 
 //Function for starting the webserver
 httpd_handle_t start_webserver(void){
     // Generate default configuration
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
-
+    config.server_port = 8070;
     // Empty handle to http_server
-    httpd_handle_t server = NULL;
-
     httpd_uri_t uriDef = {
-        .uri       = "/",
-        .method    = HTTP_ANY,
+        .uri       = "/xdd",
+        .method    = HTTP_POST,
         .handler   = &getNewOTAImage,
         .user_ctx  = NULL
     };
+
+    httpd_uri_t healthCheck = {
+        .uri       = "/health",
+        .method    = HTTP_GET,
+        .handler   = &healthCheckFunction,
+        .user_ctx  = NULL
+    };
     // Start the httpd server
-    if (httpd_start(&server, &config) == ESP_OK) {
-    // Register URI handlers
-            httpd_register_uri_handler(server, &uriDef);
+    if (httpd_start(&serverHandle, &config) == ESP_OK) {
+            // Register URI handlers
+            httpd_register_uri_handler(serverHandle, &uriDef);
+            httpd_register_uri_handler(serverHandle, &healthCheck);
         }
+    else{
+        ESP_LOGE(TAG, "Unnable to open server.");
+    }
     // If server failed to start, handle will be NULL
-    return server;
+    return serverHandle;
 }
 
 
 
 void httpServerTask(void *pvParameter){
-
-
-    simple_ota_example_task(NULL);
-}
-
-void simple_ota_example_task(void *pvParameter){
-    ESP_LOGI(TAG, "Starting OTA example task");
-    esp_http_client_config_t config = {
-        .url = CONFIG_EXAMPLE_FIRMWARE_UPGRADE_URL,
-        .cert_pem = NULL,
-        .event_handler = _http_event_handler,
-        .keep_alive_enable = true,
-    };
-
-    esp_https_ota_config_t ota_config = {
-        .http_config = &config,
-    };
-    ESP_LOGI(TAG, "Attempting to download update from %s", config.url);
-    esp_err_t ret = esp_https_ota(&ota_config);
-    if (ret == ESP_OK) {
-        ESP_LOGI(TAG, "OTA Succeed, Rebooting...");
-        esp_restart();
-    } else {
-        ESP_LOGE(TAG, "Firmware upgrade failed");
-    }
+    serverHandle = start_webserver();
     while (1) {
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 }
-
 
 void app_main(void){
 
@@ -145,7 +134,6 @@ void app_main(void){
         ret = nvs_flash_init();
     }
     ESP_ERROR_CHECK(ret);
-
     
     wifi_config_t wifiConfig = {
         .ap = {
@@ -160,11 +148,9 @@ void app_main(void){
     wifi_init_config_t defaultConfig = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());
+    wifiAP=esp_netif_create_default_wifi_ap();
     esp_wifi_init(&defaultConfig);
-    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_AP));
-    ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_AP, &wifiConfig));
     ESP_ERROR_CHECK(esp_wifi_start());
-
-    xTaskCreate(&simple_ota_example_task, "ota_example_task", (2000000), NULL, 5, NULL);
+    xTaskCreate(&httpServerTask, "httpServerTask", (4096*2), NULL, 5, NULL);
 
 }
