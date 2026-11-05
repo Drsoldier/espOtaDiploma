@@ -1,2 +1,24 @@
 */build
 .vscode
+
+.DS_Store
+.zip
+
+# LaTeX temporary files
+*.aux
+*.log
+*.fls
+*.fdb_latexmk
+*.out
+*.toc
+*.lof
+*.lot
+*.synctex.gz
+*.bbl
+*.blg
+*.gls
+*.glsdef
+*.run.xml
+_minted*/
+pythontex-files-*/
+*.pytxcode
