@@ -17,3 +17,7 @@ https://docs.zephyrproject.org/latest/services/device_mgmt/smp_protocol.html#mcu
 https://docs.zephyrproject.org/latest/services/device_mgmt/smp_groups/smp_group_1.html#slot-info
 
 https://docs.zephyrproject.org/latest/services/device_mgmt/smp_groups/smp_group_1.html
+
+
+Template za članek
+https://git.fri.uni-lj.si/UL-FRI/thesis-paper
