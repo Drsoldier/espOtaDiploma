@@ -18,16 +18,16 @@
 % use the following file to define/include additional elements
 \input{user_defs.tex}
 
-\title[slovene]{Proceduralno generiranje tropskega otoka in koralnega grebena}
-\title[english]{Procedural generation of a tropic island and coral reef}
+\title[slovene]{Primerjava implementacij oddaljenega nadgrajevanja procesorjev ESP32-S3 in NRF5340}
+\title[english]{OTA implementation comparison between ESP32-S3 and NRF5340}
 
-\author{Oskar Korošec}
+\author{Arne Salobir}
 % Please give the surname of the lead author for the running footer
-\leadauthor{Korošec O.}
+\leadauthor{Arne S.}
 
-\supervisor{izr. prof. dr.}{Iztok Lebar Bajec}
+\supervisor{prof. dr.}{Patricio Bulić}
 % If you do not have a cosupervisor, comment out the following row.
-\cosupervisor{prof. dr.}{Jure Demšar}
+%\cosupervisor{prof. dr.}{Jure Demšar}
 %\secondcosupervisor{prof. dr.}{Primer Drugega Somentorja}
 
 % Choose your study programmes (and track, if applicable): BUN-RI, BVS-RI, BUN-RM, BMA-RI-PV, BMA-RI, BMA-MM, BMA-UI
@@ -37,12 +37,14 @@
 % Choose main language: slovene or english
 \mainlanguage{slovene}
 
-\keywords[slovene]{Proceduralno generiranje, Generiranje terena, Termalna in hidravlična erozija | Koralni greben | simulacija, GPE}
+\keywords[slovene]{}
 
-\keywords[english]{Procedural generation, Terrain generation, Thermal and hydraulic erosion, Coral reef, Simulation, GPU}
+\keywords[english]{}
 
 % Provide a link (or links) to the repository where your data and code is published. If no code was produced, comment out this section.
-%\repository{https://git.fri.uni-lj.si/UL-FRI/thesis}
+\repository{https://github.com/Drsoldier/espOtaDiploma}
+
+\sloabstract{}
 
 \sloabstract{V računalniški grafiki pogosto nastane potreba po prikazu večjih področij terena. Ročno oblikovanje le-tega je običajno časovno potratno. S proceduralnim generiranjem pa lahko ob minimalnih ročnih posegih ali celo brez njih ustvarimo večja področja terena z verodostojnim videzom v razmeroma kratkem času. V diplomskem delu predstavljamo proces preoceduralnega generiranja tropskega otoka. Začne se z generiranjem začetnega terena, sledi mu preoblikovanje s simuliranjem procesov hidravlične ter termične erozije katerima sledi še simulacija rasti koralnega grebena, ki se pogostokrat nahaja v neposredni okolici tropska otoka. Na teren dinamično nanašamo teksture glede na njegovo lokalne značilnosti in med simulacijo omogočamo vizualizacijo sprememb terena v realnem času. Končni rezultat je verodostojen model tropskega otoka z okoliškim koralnim grebenom ter ustreznimi teksturami.}
 
@@ -62,7 +64,6 @@ Musgrave, Kolb in Mace \cite{synthesis_first_89} so eni izmed prvih, ki so preds
 Virov, ki prikazujejo simuliranje rasti koral z namenom vizualizacije v računalniški grafiki nismo našli. Po drugi strani pa smo našli vira, ki predstavljata model rasti koral in s tem koralnega grebena namenjen znanstvenim raziskavam \cite{nakamura_reef_model_07,nakamura_reef_simulation_11}. Z nekaj poenostavitvami smo ta model priredili našim potrebam.
 
 \section{Metode}\label{sec:metode}
-Za predstavitev terena smo uporabili višinsko karto (angl. \emph{heightmap}). To je rastrska slika, kjer vsak piksel predstavlja višino v pripadajoči točki na terenu.
 
 \subsection{Generiranje začetnega terena}
 Ker je bil cilj generirati teren v obliki otoka smo želeli, da bo teren na sredini višinske karte višji kot ob robovih. To smo dosegli z generiranjem višinske karte, ki definira teren v obliki stožca z nelinearno klančino:
@@ -324,25 +325,8 @@ kjer $\const{A}$ nadzoruje moč slabljenja svetlobe (motnost vodne mase). Izrač
 
 \section{Rezultati}
 
-Uporabljamo višinske karte velikosti 512$\times$512 točk. Začetni teren se, predvsem zato ker je opravilo prepuščeno centralni procesni enoti, v povprečju zgradi v 3\,s. Ker se ta korak izvede samo enkrat v celotnem procesu to ni moteče. Nadaljna simulacija naravnih procesov se izvaja hitro; s frekvenco 94\,Hz (iteracij na sekundo), ko se izvaja zgolj proces hidravlične erozije, 108\,Hz, ko se izvaja zgolj proces termične erozije, in 85\,Hz, ko se izvajata oba procesa erozije sočasno. Simulacije rasti koralnega grebena ne izvajamo sočasno z erozijo, ampak ločeno, ta se izvaja s frekvenco 108\,Hz. Najhitrejša je vizualizacija, ki takrat, ko se ne izvaja nobena simulacija, dosega prikaz z 124\,fps (slik na sekundo). V celoti generiranje otoka želenega videza traja od 10 do 15 sekund. Vse vrednosti veljajo za prenosni računalnik s procesorjem Intel Core i7 4700-HQ, 8\,GB delovnega pomnilnika in grafično kartico nVidia GTX 760M, pri čemer smo v pogonu Unity 5 imeli nastavljen prikaz z najvišjo stopnjo podrobnosti.
-
-Predstavljen postopek torej uspešno generira začetni teren, na katerem simulira hidravlično in termično erozijo ter nato še rast koralnega grebena. Končni teren z nanesenimi teksturami in izrisom morske gladine ima prepričljiv videz tropskega otoka. S spreminjanjem parametrov lahko dobimo veliko različnih oblik otoka, kot prikazujeta primera na sliki \ref{fig:final_island_1}.
-
-Z videzom tropskega otoka smo zadovoljni, hidravlična in termična erozija skupaj oblikujeta razgiban teren brez večjih vidnih napak. Dodan korak difuzije sedimenta se dobro obnese, vendar ni fizično natančen. Transport sedimenta in logika nalaganja sedimenta potrebujeta še nekaj izboljšav. Težava modela hidravlične erozije je v tem, da je težko uravnovesiti vse konstante v simulaciji. Simulacija hitro postane nestabilna, kar povzroča večje napake na terenu. Maške \cite{maske_2013} je v svojem diplomskem delu dosegel boljši transport in nalaganje sedimenta. Hitrosti izvajanja pa zaradi uporabe različne strojne opreme ne moremo primerjati z njegovo.
-
-Simulacija rasti koralnega grebena daje prepričljive rezultate in se izvaja hitro. Videz grebena bi lahko bil bolj razgiban, saj se trenutno ob obali otoka ustvari popoln in neprekinjen greben. Naravni grebeni so mnogokrat prekinjeni in različno oddaljeni od obale. Tako kot pri hidravlični eroziji smo tudi v primeru simulacije rasti koralnega grebena imeli težave z uravnovešanjem konstant, saj ima že zelo majhna sprememba velik vpliv na končni rezultat.
-
-Dinamično nanašanje tekstur deluje hitro in daje prepričljiv videz. Vzorčne teksture lahko zamenjamo in tako na preprost način spremenimo videz otoka. Videz otoka lahko spreminjamo tudi s spreminjanjem parametrov v senčilniku, kot sta na primer gostota ponavljanja posamezne vzorčne teksture in naklon terena, pri katerem namesto teksture trave nanesemo teksturo skale.
-
-Gladina morja veliko pripomore k prepričljivosti vizualizacije otoka. Senčilnik se dobro obnese, saj nam daje tudi vizualno informacijo o globini vode, kar je še posebno koristno v okolici koralnega grebena. Prikaz sicer ni fizikalno natančen, saj zanemari kot pogleda. Globino vedno izrisuje, kot da je pogled od zgoraj navzdol. V praksi pa to ne povzroča težav, saj teren večino časa opazujemo iz zraka.
 
 \section{Sklep}
-V delu smo predstavili postopek, ki na podlagi vhodnih parametrov generira teren v obliki otoka, na katerem v realnem času nato simulira hidravlično in termično erozijo ter za tem še rast koralnega grebena. Na teren dinamično nanaša teksture in izrisuje gladino morja. Zadani cilj, da ima generiran teren prepričljiv videz tropskega otoka z okoliškim koralnim grebenom, smo po našem mnenju dosegli.
-
-Končni teren je uporaben predvsem v strateških igrah, kjer nanj večinoma gledamo iz oddaljenosti. Teren namreč nima dovolj podrobnosti za prvo osebne igre, kjer se igralec po terenu sprehaja  in ga raziskuje. Čas potreben za generiranje otoka želenega videza je pri uporabi v računalniški igri
-lahko težava, vendar bi jo z izboljšanjem implementacije lahko odpravili. Generiranje začetnega terena bi lahko pospešili tako, da bi ga namesto v jeziku C\# implementirali v nižjenivojskem jeziku (npr. C++) ali pa na senčilniku. Hitrost izvajanja simulacij naravnih procesov na GPE bi lahko optimizirali, saj se v trenutni implementaciji opravlja nepotrebno kopiranje tekstur, kar izvajanja simulacij upočasni.
-
-Terenu bi lahko dodatno izboljšali videz s tem, da bi za njegovo predstavitev uporabili več plasti z različnimi trdotami, kar bi morali nato upoštevati tudi pri simulacijah procesa erozije \cite{benevs_layered_08}. Funkcije, ki generirajo začetni teren, pa smo že zasnovali tako, da lahko izhod ene uporabimo kot vhod druge. S tem imamo več možnosti pri gradnji začetnega terena; nismo omejeni zgolj na obliko stožca.
 
 % The acknowledgemenst content (not mandatory).
 \acknow{Raziskavo je omogočila Javna agencija za raziskovalno dejavnost Republike Slovenije (ARRS) v okviru programa P2-0359, Vseprisotno računalništvo.}
