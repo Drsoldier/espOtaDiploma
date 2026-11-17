@@ -21,3 +21,8 @@ https://docs.zephyrproject.org/latest/services/device_mgmt/smp_groups/smp_group_
 
 Template za članek
 https://git.fri.uni-lj.si/UL-FRI/thesis-paper
+
+
+Advanced System for Remote Updates on ESP32-Based Devices Using Over-the-Air Update Technology
+https://www.mdpi.com/2073-431X/14/12/531
+
